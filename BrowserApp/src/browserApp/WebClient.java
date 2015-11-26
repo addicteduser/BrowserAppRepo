@@ -13,12 +13,14 @@ import java.net.SocketException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
-public class WebClient extends Thread{
+public class WebClient implements Runnable{
 	/**
 	 * Web server port = 80
 	 */
-	private final int port = 80;
-	private final String serverName = "stackoverflow.com";
+	private Thread T;
+	
+	private final int port = 8080;
+	private final String serverName = "localhost";
 	private Socket connection;
 	private BufferedReader input;
 	private PrintWriter output;
@@ -28,16 +30,23 @@ public class WebClient extends Thread{
 		this.i = i;
 	}
 	
-	public static void main(String[] args) {
-		new WebClient(0).start();
-	}
+	public void start(){
+		T = new Thread(this);
+		Driver.ThreadPool(T);
+		//T.start();
 
+	}
+	
+//	public static void main(String[] args) {
+//		new WebClient(0).start();
+//	}
+	@Override
 	public void run(){
 		connectToWebServer();
 		initializeIOStreams();
 		sendHttpGetRequest(); //send HTTP request
-		//receiveResponse(); //receive server response
-		receiveResponse2();
+		receiveResponse(); //receive server response
+		//receiveResponse2();
 		closeConnection();
 	}
 
@@ -47,7 +56,7 @@ public class WebClient extends Thread{
 	private void connectToWebServer() {
 		try {
 			connection = new Socket(InetAddress.getByName(serverName), port);
-			System.out.println("[CLIENT] Connected to server...");
+			//System.out.println("[CLIENT] Connected to server...");
 		} catch (IOException e) {
 			System.err.println("ERROR: " + e);
 		}
@@ -60,7 +69,7 @@ public class WebClient extends Thread{
 		try {
 			input = new BufferedReader(new InputStreamReader(connection.getInputStream()));
 			output = new PrintWriter(new BufferedOutputStream(connection.getOutputStream()), true);
-			System.out.println("[CLIENT] Initialized I/O streams...");
+			//System.out.println("[CLIENT] Initialized I/O streams...");
 		} catch (IOException e) {
 			System.err.println("ERROR: " + e);
 		}
@@ -73,7 +82,7 @@ public class WebClient extends Thread{
 		String message = "GET / HTTP/1.1\r\n" + "Host: "+serverName+"\r\n\r\n";
 		//System.out.println(message);
 		output.println(message);
-		System.out.println("[CLIENT] HTTP GET request sent to [HOST:"+serverName+"]...");
+		//System.out.println("[CLIENT] HTTP GET request sent to [HOST:"+serverName+"]...");
 	}
 
 	/**
@@ -139,7 +148,7 @@ public class WebClient extends Thread{
 		} catch (IOException e) {
 			System.err.println("ERROR: " + e);
 		} finally {
-			System.out.println("[CLIENT] Closed socket connection and I/O streams...");
+			//System.out.println("[CLIENT] Closed socket connection and I/O streams...");
 		}
 	}
 }
